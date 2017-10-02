@@ -41,10 +41,16 @@ class cssmstest extends unittestdatabase {
                 <ModuleCode>TESTMOD</ModuleCode>
               </Module>
             </Modules>
-            <Owner>
-              <UserID>91234567</UserID>
-              <UserName>staff</UserName>
-            </Owner>
+            <Owners>
+              <Owner>
+                <UserID>1248778</UserID>
+                <UserName>unknown</UserName>
+              </Owner>
+              <Owner>
+                <UserID>91234567</UserID>
+                <UserName>staff</UserName>
+              </Owner>
+            </Owners>
             <AcademicSession>2016</AcademicSession>
             <Sittings>1</Sittings>
           </Assessment>
@@ -59,10 +65,16 @@ class cssmstest extends unittestdatabase {
                 <ModuleCode>TESTMOD</ModuleCode>
               </Module>
             </Modules>
-            <Owner>
-              <UserID>91234567</UserID>
-              <UserName>staff</UserName>
-            </Owner>
+            <Owners>
+              <Owner>
+                <UserID>1248778</UserID>
+                <UserName>unknown</UserName>
+              </Owner>
+              <Owner>
+                <UserID>91234567</UserID>
+                <UserName>staff</UserName>
+              </Owner>
+            </Owners>
             <AcademicSession>2016</AcademicSession>
             <Sittings>1</Sittings>
           </Assessment>
@@ -77,10 +89,16 @@ class cssmstest extends unittestdatabase {
                 <ModuleCode>TESTMOD</ModuleCode>
               </Module>
             </Modules>
-            <Owner>
-              <UserID>91234567</UserID>
-              <UserName>staff</UserName>
-            </Owner>
+            <Owners>
+              <Owner>
+                <UserID>1248778</UserID>
+                <UserName>unknown</UserName>
+              </Owner>
+              <Owner>
+                <UserID>91234567</UserID>
+                <UserName>staff</UserName>
+              </Owner>
+            </Owners>
             <AcademicSession>2016</AcademicSession>
             <Sittings>1</Sittings>
           </Assessment>
@@ -95,10 +113,16 @@ class cssmstest extends unittestdatabase {
                 <ModuleCode>TESTMOD</ModuleCode>
               </Module>
             </Modules>
-            <Owner>
-              <UserID>91234567</UserID>
-              <UserName>staff</UserName>
-            </Owner>
+            <Owners>
+              <Owner>
+                <UserID>1248778</UserID>
+                <UserName>unknown</UserName>
+              </Owner>
+              <Owner>
+                <UserID>91234567</UserID>
+                <UserName>staff</UserName>
+              </Owner>
+            </Owners>
             <AcademicSession>2016</AcademicSession>
             <Sittings>1</Sittings>
             <Notes>meh</Notes>
@@ -468,6 +492,7 @@ class cssmstest extends unittestdatabase {
      * @group plugin_cs_sms
      */
     public function test_get_assessments() {
+        $this->config->set('cfg_summative_mgmt', true);
         $sms = $this->getMockBuilder('plugins\SMS\plugin_cs_sms\plugin_cs_sms')
             ->setMethods(array('callws'))
             ->setConstructorArgs(array($this->db, 0))
@@ -485,6 +510,7 @@ class cssmstest extends unittestdatabase {
         $queryTable = $this->getConnection()->createQueryTable('properties_modules', 'SELECT property_id, idMod FROM properties_modules');
         $expectedTable = $this->get_expected_data_set('scheduling')->getTable("properties_modules");
         $this->assertTablesEqual($expectedTable, $queryTable);
+        $this->config->set('cfg_summative_mgmt', false);
     }
     /**
      * Test get faculties
@@ -560,7 +586,7 @@ class cssmstest extends unittestdatabase {
             ->method('callws')
             ->will($this->returnValue($this->modulexml));
         $sms->get_modules();
-        $queryTable = $this->getConnection()->createQueryTable('modules', 'SELECT id, moduleid, fullname, schoolid, externalid, academic_year_start, sms FROM modules');
+        $queryTable = $this->getConnection()->createQueryTable('modules', 'SELECT id, moduleid, fullname, schoolid, externalid, academic_year_start, sms, active FROM modules');
         $expectedTable = $this->get_expected_data_set('faculty')->getTable("modules");
         $this->assertTablesEqual($expectedTable, $queryTable);
     }
@@ -578,7 +604,7 @@ class cssmstest extends unittestdatabase {
             ->method('callws')
             ->will($this->returnValue($this->modulexml));
         $sms->get_modules('030003', 2016);
-        $queryTable = $this->getConnection()->createQueryTable('modules', 'SELECT id, moduleid, fullname, schoolid, externalid, academic_year_start, sms FROM modules');
+        $queryTable = $this->getConnection()->createQueryTable('modules', 'SELECT id, moduleid, fullname, schoolid, externalid, academic_year_start, sms, active FROM modules');
         $expectedTable = $this->get_expected_data_set('faculty')->getTable("modules");
         $this->assertTablesEqual($expectedTable, $queryTable);
     }
@@ -588,7 +614,6 @@ class cssmstest extends unittestdatabase {
      * @group plugin_cs_sms
      */
     public function test_get_enrolments_all() {
-        $this->config->set_setting('campuslist', 'U', 'plugin_cs_sms');
         $sms = $this->getMockBuilder('plugins\SMS\plugin_cs_sms\plugin_cs_sms')
             ->setMethods(array('callws'))
             ->setConstructorArgs(array($this->db, 0))
@@ -613,7 +638,6 @@ class cssmstest extends unittestdatabase {
      * @group plugin_cs_sms
      */
     public function test_get_enrolments_all_missing_nodes() {
-        $this->config->set_setting('campuslist', 'U', 'plugin_cs_sms');
         $sms = $this->getMockBuilder('plugins\SMS\plugin_cs_sms\plugin_cs_sms')
             ->setMethods(array('callws'))
             ->setConstructorArgs(array($this->db, 0))
@@ -638,7 +662,6 @@ class cssmstest extends unittestdatabase {
      * @group plugin_cs_sms
      */
     public function test_get_enrolments_all_skip_missing_members() {
-        $this->config->set_setting('campuslist', 'U', 'plugin_cs_sms');
         $sms = $this->getMockBuilder('plugins\SMS\plugin_cs_sms\plugin_cs_sms')
             ->setMethods(array('callws'))
             ->setConstructorArgs(array($this->db, 0))
@@ -663,7 +686,6 @@ class cssmstest extends unittestdatabase {
      * @group plugin_cs_sms
      */
     public function test_get_enrolments() {
-        $this->config->set_setting('campuslist', 'U', 'plugin_cs_sms');
         $sms = $this->getMockBuilder('plugins\SMS\plugin_cs_sms\plugin_cs_sms')
             ->setMethods(array('callws'))
             ->setConstructorArgs(array($this->db, 0))

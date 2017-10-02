@@ -34,13 +34,14 @@ class courses_helper {
      * @param mysqli $db db connection
      * @param string $logfile log file location
      * @param boolean $validation validate xml response against schema
+     * @param array $args arguments used to call web service
      * @return boolean|array false on error, list of current plan ids on success
      */
-    static public function process($response, $userid, $strings, $db, $logfile, $validation) {
+    static public function process($response, $userid, $strings, $db, $logfile, $validation, $args) {
         // Parse returned XML.
         $data = new \DOMDocument();
         $data->loadXML($response);
-        if (xml_helper::check_for_error($data, $userid, $db)) {
+        if (xml_helper::check_for_error($data, $userid, $db, 'course feed', $args)) {
             return false;
         }
         if ($validation) {
@@ -66,7 +67,7 @@ class courses_helper {
             if (!is_null($externalid)) {
                 $currentplans[] = $externalid;
                 $params = array();
-                $courseid = \CourseUtils::get_courseid_from_externalid($externalid, $db);
+                $courseid = \CourseUtils::get_courseid_from_externalid($externalid, plugin_cs_sms::SMS, $db);
                 try {
                     $params['name'] = $xpath->query('./PlanCode', $plan)->item(0)->nodeValue;
                     $params['description'] = $xpath->query('./PlanDescr', $plan)->item(0)->nodeValue;

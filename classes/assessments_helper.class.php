@@ -43,13 +43,14 @@ class assessments_helper {
      * @param string $logfile log file location
      * @param integer $session academic session for enrolments
      * @param boolean $validation validate xml response against schema
+     * @param array $args arguments used to call web service
      * @return boolean true on success, false on error
      */
-    static public function process($response, $userid, $strings, $db, $logfile, $session, $validation) {
+    static public function process($response, $userid, $strings, $db, $logfile, $session, $validation, $args) {
         // Parse returned XML.
         $data = new \DOMDocument();
         $data->loadXML($response);
-        if (xml_helper::check_for_error($data, $userid, $db)) {
+        if (xml_helper::check_for_error($data, $userid, $db, 'assessment', $args)) {
             return false;
         }
         if ($validation) {
@@ -85,12 +86,12 @@ class assessments_helper {
                     $params['duration'] = $xpath->query('./DurationMinutes', $assessment)->item(0)->nodeValue;
                     $params['session'] = $xpath->query('./AcademicSession', $assessment)->item(0)->nodeValue;
                     $params['sittings'] = $xpath->query('./Sittings', $assessment)->item(0)->nodeValue;
-                    $user = $xpath->query('./Owner', $assessment)->item(0);
-                    $params['owner'] = self::get_owner($user, $db);
+                    $owners = $xpath->query('./Owners', $assessment)->item(0)->childNodes;
+                    $params['owner'] = self::process_owner($owners, $db);
                     $modules = $xpath->query('./Modules', $assessment)->item(0)->childNodes;
                     $params['extmodules'] = self::process_module($modules);
                 } catch (\exception $e) {
-                    // If the above are not provided we cannto create the assessment.
+                    // If the above are not provided we cannot create the assessment.
                     continue;
                 }
                 // Default optionals to null.
@@ -157,10 +158,34 @@ class assessments_helper {
     }
 
     /**
+     * Process owners node
+     * @param DOMNodeList $ownernode xml for owners
+     * @param mysqli $db db connection
+     * @return mixed user rogo id or false if not found, null if missing.
+     */
+    static private function process_owner($ownernode, $db) {
+        if (is_null($ownernode)) {
+          throw new \Exception('owners tag missing');
+          exit();
+        }
+        $userid = null;
+        foreach ($ownernode as $owner) {
+            if ($owner->hasChildNodes()) {
+                $userid = self::get_owner($owner, $db);
+                if ($userid) {
+                    // Found an owner that exits in rogo.
+                    break;
+                }
+            }
+        }
+        return $userid;
+    }
+    
+    /**
      * Get owner from node
      * @param DOMNode $usernode xml for user
      * @param mysqli $db db connection
-     * @return integer|false user rogo id or false if not found.
+     * @return mixed user rogo id or false if not found, null if missing.
      */
     static private function get_owner($usernode, $db) {
         $xpath = new \DOMXPath($usernode->ownerDocument);
@@ -179,6 +204,10 @@ class assessments_helper {
      * @return array list of module external ids.
      */
     static private function process_module($modulenode) {
+        if (is_null($modulenode)) {
+          throw new \Exception('modules tag missing');
+          exit();
+        }
         $modulesarray = array();
         $i = 0;
         foreach ($modulenode as $module) {

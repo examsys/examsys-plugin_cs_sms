@@ -34,13 +34,14 @@ class faculties_helper {
      * @param mysqli $db db connection
      * @param string $logfile log file location
      * @param boolean $validation validate xml response against schema
+     * @param array $args arguments used to call web service
      * @return boolean|array false on error, list of facultes and schools in CS on success
      */
-    static public function process($response, $userid, $strings, $db, $logfile, $validation) {
+    static public function process($response, $userid, $strings, $db, $logfile, $validation, $args) {
         // Parse returned XML.
         $data = new \DOMDocument();
         $data->loadXML($response);
-        if (xml_helper::check_for_error($data, $userid, $db)) {
+        if (xml_helper::check_for_error($data, $userid, $db, 'faculty feed', $args)) {
             return false;
         }
         if ($validation) {
@@ -66,7 +67,7 @@ class faculties_helper {
             if (!is_null($externalid)) {
                 $currentfaculties[] = $externalid;
                 $params = array();
-                $facultyid= \FacultyUtils::get_facultyid_from_externalid($externalid, $db);
+                $facultyid= \FacultyUtils::get_facultyid_from_externalid($externalid, plugin_cs_sms::SMS, $db);
                 try {
                     $params['code'] = $xpath->query('./FacultyCode', $faculty)->item(0)->nodeValue;
                     $params['name'] = $xpath->query('./FacultyDescr', $faculty)->item(0)->nodeValue;

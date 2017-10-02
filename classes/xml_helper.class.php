@@ -32,19 +32,21 @@ class xml_helper {
      * @param DOMDocument $data xml response
      * @param integer $userid user used to log error to
      * @param mysqli $db db connection
+     * @param string $ws name of web service called
+     * @param array $args arguments used to call web service
      * @return boolean true on error
      */
-    static public function check_for_error($data, $userid, $db) {
+    static public function check_for_error($data, $userid, $db, $ws, $args) {
         $errornode = $data->getElementsByTagName('Error');
         foreach ($errornode as $error) {
             $errorstring = null;
             $xpath = new \DOMXPath($error->ownerDocument);
             $header = $xpath->query('./Header', $error)->item(0);
             if (!is_null($header)) {
-                $errorstring = $header->nodeValue;
+                $errorstring = $ws . ' - ' . $header->nodeValue;
             }
             $errorline = __LINE__ - 1;
-            log_helper::log_app_warning($userid, $errorstring, $errorline, $db);
+            log_helper::log_app_warning($userid, $errorstring, $errorline, $db, $args);
             return true;
         }
         return false;
@@ -64,7 +66,7 @@ class xml_helper {
         $schema = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'schema' . DIRECTORY_SEPARATOR . $schemaname . '.xsd';
         if (!$data->schemaValidate($schema)) {
             $errorline = __LINE__ - 1;
-            log_helper::log_app_warning($userid, $strings['restnotvalid'], $errorline, $db);
+            log_helper::log_app_warning($userid, $strings['restnotvalid'], $errorline, $db, array());
             return false;
         }
         // Disable user error handling.

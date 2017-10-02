@@ -34,13 +34,14 @@ class modules_helper {
      * @param mysqli $db db connection
      * @param string $logfile log file location
      * @param boolean $validation validate xml response against schema
+     * @param array $args arguments used to call web service
      * @return boolean|array false on error, list of current module ids on success
      */
-    static public function process($response, $userid, $strings, $db, $logfile, $validation) {
+    static public function process($response, $userid, $strings, $db, $logfile, $validation, $args) {
         // Parse returned XML.
         $data = new \DOMDocument();
         $data->loadXML($response);
-        if (xml_helper::check_for_error($data, $userid, $db)) {
+        if (xml_helper::check_for_error($data, $userid, $db, 'module feed', $args)) {
             return false;
         }
         if ($validation) {
@@ -76,7 +77,7 @@ class modules_helper {
                 }
                 $params['nodeid'] = $node;
                 $params['sms'] = plugin_cs_sms::SMS;
-                $modid = \module_utils::get_id_from_externalid($externalid, $db);
+                $modid = \module_utils::get_id_from_externalid($externalid, plugin_cs_sms::SMS, $db);
                 if ($modid) {
                     // If ExternalID exists call modulemanagement update api.
                     $response = $mm->update($params, $userid);
