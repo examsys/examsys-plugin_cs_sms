@@ -15,6 +15,7 @@
 // along with Rogō.  If not, see <http://www.gnu.org/licenses/>.
 
 use testing\unittest\unittestdatabase;
+use PHPUnit\DbUnit\DataSet\YamlDataSet;
 
 /**
  * Test cs mapping functions
@@ -262,6 +263,16 @@ class cssmstest extends unittestdatabase {
                 <ProgramCode>U1509</ProgramCode>
                 <ProgramDescr>Breast Surgery</ProgramDescr>
             </Plan>
+            <Plan>
+                <PlanID>UON|U8PBRSGY</PlanID>
+                <PlanCode>U8PBRSGY</PlanCode>
+                <PlanDescr>Breast Surgery</PlanDescr>
+                <FacultyID>UFY-MHS</FacultyID>
+                <SchoolID>USC-ME2</SchoolID>
+                <ProgramID>UON|U1509</ProgramID>
+                <ProgramCode>U1509</ProgramCode>
+                <ProgramDescr>Breast Surgery</ProgramDescr>
+            </Plan>
         </PlanList>';
     /**
      * Mock module xml
@@ -476,7 +487,7 @@ class cssmstest extends unittestdatabase {
      * @return dataset
      */
     public function getDataSet() {
-        return new PHPUnit_Extensions_Database_DataSet_YamlDataSet(dirname(__DIR__) . DIRECTORY_SEPARATOR  . "fixtures" . DIRECTORY_SEPARATOR . "sms.yml");
+        return new YamlDataSet(dirname(__DIR__) . DIRECTORY_SEPARATOR  . "fixtures" . DIRECTORY_SEPARATOR . "sms.yml");
     }
     /**
      * Get expected data set from yml
@@ -484,7 +495,7 @@ class cssmstest extends unittestdatabase {
      * @return dataset
      */
     public function get_expected_data_set($name) {
-        return new PHPUnit_Extensions_Database_DataSet_YamlDataSet(dirname(__DIR__) . DIRECTORY_SEPARATOR  . "fixtures" . DIRECTORY_SEPARATOR . $name . ".yml");
+        return new YamlDataSet(dirname(__DIR__) . DIRECTORY_SEPARATOR  . "fixtures" . DIRECTORY_SEPARATOR . $name . ".yml");
     }
     /**
      * Test get assessments
@@ -492,7 +503,6 @@ class cssmstest extends unittestdatabase {
      * @group plugin_cs_sms
      */
     public function test_get_assessments() {
-        $this->config->set('cfg_summative_mgmt', true);
         $sms = $this->getMockBuilder('plugins\SMS\plugin_cs_sms\plugin_cs_sms')
             ->setMethods(array('callws'))
             ->setConstructorArgs(array($this->db, 0))
@@ -500,6 +510,7 @@ class cssmstest extends unittestdatabase {
         $sms->expects($this->once())
             ->method('callws')
             ->will($this->returnValue($this->assessmentxml));
+        $this->config->set_setting('cfg_summative_mgmt', true, \Config::BOOLEAN);
         $sms->get_assessments(2016);
         $queryTable = $this->getConnection()->createQueryTable('scheduling', 'SELECT id, paperID, notes, sittings FROM scheduling');
         $expectedTable = $this->get_expected_data_set('scheduling')->getTable("scheduling");
@@ -510,7 +521,7 @@ class cssmstest extends unittestdatabase {
         $queryTable = $this->getConnection()->createQueryTable('properties_modules', 'SELECT property_id, idMod FROM properties_modules');
         $expectedTable = $this->get_expected_data_set('scheduling')->getTable("properties_modules");
         $this->assertTablesEqual($expectedTable, $queryTable);
-        $this->config->set('cfg_summative_mgmt', false);
+        $this->config->set_setting('cfg_summative_mgmt', false, \Config::BOOLEAN);
     }
     /**
      * Test get faculties
@@ -552,7 +563,7 @@ class cssmstest extends unittestdatabase {
         $expectedTable = $this->get_expected_data_set('faculty')->getTable("faculty");
         $this->assertTablesEqual($expectedTable, $queryTable);
         // Missing schools so no schools created.
-        $this->assertEquals(1, $this->getConnection()->getRowCount('schools'));
+        $this->assertEquals(2, $this->getConnection()->getRowCount('schools'));
     }
     /**
      * Test get courses
@@ -710,7 +721,7 @@ class cssmstest extends unittestdatabase {
      * @group plugin_cs_sms
      */
     public function test_install() {
-        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms($this->db);
+        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms();
         $this->assertEquals('OK', $sms->install($this->config->get('cfg_phpunit_db_user'), $this->config->get('cfg_phpunit_db_password')));
         // Check tables are correct.
         $queryTable = $this->getConnection()->createQueryTable('plugins', 'SELECT component, version, type FROM plugins');
@@ -727,7 +738,7 @@ class cssmstest extends unittestdatabase {
      * @group plugin_cs_sms
      */
     public function test_uninstall() {
-        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms($this->db);
+        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms();
         $sms->install($this->config->get('cfg_phpunit_db_user'), $this->config->get('cfg_phpunit_db_password'));
         $this->assertEquals('OK', $sms->uninstall($this->config->get('cfg_phpunit_db_user'), $this->config->get('cfg_phpunit_db_password')));
         // Check tables are correct.
@@ -743,7 +754,7 @@ class cssmstest extends unittestdatabase {
      * @group plugin_cs_sms
      */
     public function test_get_plugin_version() {
-        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms($this->db);
+        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms();
         $sms->install($this->config->get('cfg_phpunit_db_user'), $this->config->get('cfg_phpunit_db_password'));
         $this->assertEquals($sms->get_installed_version(), $sms->get_plugin_version('plugin_cs_sms'));
         $sms->uninstall($this->config->get('cfg_phpunit_db_user'), $this->config->get('cfg_phpunit_db_password'));
@@ -757,7 +768,7 @@ class cssmstest extends unittestdatabase {
         $lang = new \langpack();
         $component = 'plugins/SMS/plugin_cs_sms/plugin_cs_sms';
         $strings = $lang->get_all_strings($component);
-        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms($this->db);
+        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms();
         $array = array('url' => $this->config->get('cfg_root_path') . '/plugins/SMS/plugin_cs_sms/admin/import_modules.php',
          'blurb' => $strings['importmodules'],
          'tooltip' => $strings['importmodulestooltip']);
@@ -770,7 +781,7 @@ class cssmstest extends unittestdatabase {
      * @group plugin_cs_sms
      */
     public function test_supports_module_import_disabled() {
-        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms($this->db);
+        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms();
         $this->config->set_setting('enable_module', 0, \Config::BOOLEAN, 'plugin_cs_sms');
         $this->config->set_setting('enable_enrolment', 0, \Config::BOOLEAN, 'plugin_cs_sms');
         $this->assertFalse($sms->supports_module_import());
@@ -785,7 +796,7 @@ class cssmstest extends unittestdatabase {
         $lang = new \langpack();
         $component = 'plugins/SMS/plugin_cs_sms/plugin_cs_sms';
         $strings = $lang->get_all_strings($component);
-        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms($this->db);
+        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms();
         $array = array('url' => $this->config->get('cfg_root_path') . '/plugins/SMS/plugin_cs_sms/admin/import_faculties.php',
          'blurb' => $strings['importfaculties'],
          'tooltip' => $strings['importfacultiestooltip']);
@@ -797,7 +808,7 @@ class cssmstest extends unittestdatabase {
      * @group plugin_cs_sms
      */
     public function test_supports_faculty_import_disabled() {
-        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms($this->db);
+        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms();
         $this->config->set_setting('enable_faculty', 0, \Config::BOOLEAN, 'plugin_cs_sms');
         $this->assertFalse($sms->supports_faculty_import());
     }
@@ -810,7 +821,7 @@ class cssmstest extends unittestdatabase {
         $lang = new \langpack();
         $component = 'plugins/SMS/plugin_cs_sms/plugin_cs_sms';
         $strings = $lang->get_all_strings($component);
-        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms($this->db);
+        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms();
         $array = array('url' => $this->config->get('cfg_root_path') . '/plugins/SMS/plugin_cs_sms/admin/import_courses.php',
          'blurb' => $strings['importcourses'],
          'tooltip' => $strings['importcoursestooltip']);
@@ -822,7 +833,7 @@ class cssmstest extends unittestdatabase {
      * @group plugin_cs_sms
      */
     public function test_supports_course_import_disabled() {
-        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms($this->db);
+        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms();
         $this->config->set_setting('enable_course', 0, \Config::BOOLEAN, 'plugin_cs_sms');
         $this->assertFalse($sms->supports_course_import());
     }
@@ -832,7 +843,7 @@ class cssmstest extends unittestdatabase {
      * @group plugin_cs_sms
      */
     public function test_supports_enrol_import() {
-        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms($this->db);
+        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms();
         $this->assertTrue($sms->supports_enrol_import());
     }
     /**
@@ -841,7 +852,7 @@ class cssmstest extends unittestdatabase {
      * @group plugin_cs_sms
      */
     public function test_supports_enrol_import_disabled() {
-        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms($this->db);
+        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms();
         $this->config->set_setting('enable_enrolment', 0, \Config::BOOLEAN, 'plugin_cs_sms');
         $this->assertFalse($sms->supports_enrol_import());
     }
@@ -854,7 +865,7 @@ class cssmstest extends unittestdatabase {
         $lang = new \langpack();
         $component = 'plugins/SMS/plugin_cs_sms/plugin_cs_sms';
         $strings = $lang->get_all_strings($component);
-        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms($this->db);
+        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms();
         $array = array('url' => $this->config->get('cfg_root_path') . '/plugins/SMS/plugin_cs_sms/admin/import_assessments.php',
          'blurb' => $strings['importassessments'],
          'tooltip' => $strings['importassessmentstooltip']);
@@ -866,7 +877,7 @@ class cssmstest extends unittestdatabase {
      * @group plugin_cs_sms
      */
     public function test_supports_assessment_import_disabled() {
-        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms($this->db);
+        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms();
         $this->config->set_setting('enable_assessment', 0, \Config::BOOLEAN, 'plugin_cs_sms');
         $this->assertFalse($sms->supports_assessment_import());
     }
@@ -876,7 +887,7 @@ class cssmstest extends unittestdatabase {
      * @group plugin_cs_sms
      */
     public function test_get_name() {
-        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms($this->db);
+        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms();
         $this->assertEquals('Campus Solutions', $sms->get_name());
     }
     /**
@@ -886,7 +897,7 @@ class cssmstest extends unittestdatabase {
      */
     public function test_enable_plugin() {
         $config = $this->config->get_setting('plugin_sms', 'enabled_plugin');
-        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms($this->db);
+        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms();
         // Check already enabled.
         $sms->enable_plugin();
         $this->assertEquals(array('plugin_cs_sms'), $config);
@@ -901,7 +912,7 @@ class cssmstest extends unittestdatabase {
      * @group plugin_cs_sms
      */
     public function test_disable_plugin() {
-        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms($this->db);
+        $sms = new plugins\SMS\plugin_cs_sms\plugin_cs_sms();
         $sms->disable_plugin();
         $config = $this->config->get_setting('plugin_sms', 'enabled_plugin');
         $this->assertEquals(array(), $config);

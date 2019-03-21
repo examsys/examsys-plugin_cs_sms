@@ -32,7 +32,6 @@ if (PHP_SAPI != 'cli') {
 set_time_limit(0);
 
 require_once dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/include/load_config.php';
-require_once dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/include/auth.inc';
 require_once dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/include/custom_error_handler.inc';
 
 // Start class autoloading.
@@ -40,6 +39,7 @@ require_once dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/include/a
 autoloader::init();
 
 $configObject = \Config::get_instance();
+$notice = UserNotices::get_instance();
 
 $mysqli = \DBUtils::get_mysqli_link($configObject->get('cfg_db_host'), $configObject->get('cfg_db_sysadmin_user'),
     $configObject->get('cfg_db_sysadmin_passwd'), $configObject->get('cfg_db_database'), $configObject->get('cfg_db_charset'),
@@ -47,6 +47,6 @@ $mysqli = \DBUtils::get_mysqli_link($configObject->get('cfg_db_host'), $configOb
 
 $configObject->set_db_object($mysqli);
 // Run sms if enabled.
-$sms = new plugin_cs_sms($mysqli, 0);
+$sms = new plugin_cs_sms(0);
 $sms->get_courses();
 $mysqli->close();

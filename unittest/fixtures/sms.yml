@@ -70,14 +70,14 @@ config:
     type: "boolean"
   -
     component: "plugin_cs_sms"
-    setting: "gradebook_md5"
-    value: 1
-    type: "boolean"
-  -
-    component: "plugin_cs_sms"
     setting: "gradebooklocation"
     value: ""
     type: "string"
+  -
+    component: "plugin_cs_sms"
+    setting: "gradebook_md5"
+    value: 1
+    type: "boolean"
   -
     component: "plugin_cs_sms"
     setting: "installed"
@@ -96,7 +96,7 @@ config:
   -
     component: "plugin_cs_sms"
     setting: "password"
-    value: "password"
+    value: "aninscurepassword"
     type: "password"
   -
     component: "plugin_cs_sms"
@@ -147,6 +147,13 @@ schools:
     school: "Centre for Testing"
     facultyID: 1
     externalid: "USC-MED"
+    externalsys: "Campus Solutions"
+  -
+    id: 2
+    code: "TEST2"
+    school: "Centre for Testing 2"
+    facultyID: 2
+    externalid: "USC-ME2"
     externalsys: "Campus Solutions"
 courses:
   -
