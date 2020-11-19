@@ -1,4 +1,5 @@
 <?php
+
 // This file is part of Rogō
 //
 // Rogō is free software: you can redistribute it and/or modify
@@ -15,30 +16,60 @@
 // along with Rogō.  If not, see <http://www.gnu.org/licenses/>.
 
 use testing\unittest\unittestdatabase;
-use PHPUnit\DbUnit\DataSet\YamlDataSet;
 use plugins\SMS\plugin_cs_sms\user_helper as user_helper;
+
 /**
  * Test user helper functions
- * 
+ *
  * @author Dr Joseph Baxter <joseph.baxter@nottingham.ac.uk>
  * @version 1.0
  * @copyright Copyright (c) 2016 onwards The University of Nottingham
  * @package tests
  */
-class user_helpertest extends unittestdatabase {
+class user_helpertest extends unittestdatabase
+{
     /**
-     * Get init data set from yml
-     * @return dataset
+     * Generate data for test.
+     * @throws \testing\datagenerator\not_found
      */
-    public function getDataSet() {
-        return new YamlDataSet(dirname(__DIR__) . DIRECTORY_SEPARATOR  . "fixtures" . DIRECTORY_SEPARATOR . "userhelper.yml");
+    public function datageneration(): void
+    {
+        $datagenerator = $this->get_datagenerator('users', 'core');
+        $user = $datagenerator->create_user(array('surname' => 'tester', 'username' => 'testy1', 'roles' => 'Student', 'sid' => 'dgsfg345235b'));
+        $this->uid1 = $user['id'];
+        $user = $datagenerator->create_user(array('surname' => 'tester', 'username' => 'testy2', 'roles' => 'Student', 'sid' => 'dgsfg345235c'));
+        $this->uid2 = $user['id'];
+        $user = $datagenerator->create_user(array('surname' => 'tester', 'username' => 'testy3', 'roles' => 'Student', 'sid' => 'dgsfg345235b'));
+        $this->uid3 = $user['id'];
+        $user = $datagenerator->create_user(array('surname' => 'tester', 'username' => 'testy4', 'roles' => 'Student', 'sid' => 'dgsfg345235c'));
+        $this->uid4 = $user['id'];
+        $user = $datagenerator->create_user(array('surname' => 'tester', 'username' => 'testy5', 'roles' => 'Student', 'sid' => 'dgsfg345235d'));
+        $this->uid5 = $user['id'];
+        $user = $datagenerator->create_user(array('surname' => 'tester', 'username' => 'testy6', 'roles' => 'Student', 'sid' => 'dgsfg345235e'));
+        $this->uid6 = $user['id'];
+        $user = $datagenerator->create_user(array('surname' => 'tester', 'username' => 'testy7', 'roles' => 'Student', 'sid' => 'dgsfg345235f'));
+        $this->uid7 = $user['id'];
+        $user = $datagenerator->create_user(array('surname' => 'tester', 'username' => 'testy8', 'roles' => 'Student', 'sid' => 'dgsfg345235g'));
+        $this->uid8 = $user['id'];
+        $user = $datagenerator->create_user(array('surname' => 'tester', 'username' => 'testy9', 'roles' => 'Student', 'sid' => 'dgsfg345235h'));
+        $this->uid9 = $user['id'];
+        $user = $datagenerator->create_user(array('surname' => 'tester', 'username' => 'testy10', 'roles' => 'Student', 'sid' => 'dgsfg345235i'));
+        $this->uid10 = $user['id'];
+        $user = $datagenerator->create_user(array('surname' => 'tester', 'username' => 'testy11', 'roles' => 'Student', 'sid' => 'dgsfg345235j'));
+        $this->uid11 = $user['id'];
+        $user = $datagenerator->create_user(array('surname' => 'tester', 'username' => 'testy12', 'roles' => 'Suspended', 'sid' => 'dgsfg345235k'));
+        $this->uid12 = $user['id'];
+        $user = $datagenerator->create_user(array('surname' => 'tester', 'username' => 'testy13', 'roles' => 'Locked', 'sid' => 'dgsfg345235l'));
+        $this->uid13 = $user['id'];
     }
+
     /**
      * Test map gender
      * @group sms
      * @group plugin_cs_sms
      */
-    public function test_map_gender() {
+    public function test_map_gender()
+    {
         // Other gender.
         $this->assertEquals('Other', user_helper::map_gender('X', 'Mx'));
         // Male gender.
@@ -50,12 +81,14 @@ class user_helpertest extends unittestdatabase {
         // Unkown gender
         $this->assertEquals(null, user_helper::map_gender('', 'Prof'));
     }
+
     /**
      * Test map title
      * @group sms
      * @group plugin_cs_sms
      */
-    public function test_map_title() {
+    public function test_map_title()
+    {
         // Known titles.Mx|Mr|Mrs|Miss|Ms|Dr|Professor
         $this->assertEquals('Professor', user_helper::map_title('Professor'));
         $this->assertEquals('Dr', user_helper::map_title('Dr'));
@@ -69,12 +102,14 @@ class user_helpertest extends unittestdatabase {
         $this->assertEquals(null, user_helper::map_title('Mrx'));
         $this->assertEquals(null, user_helper::map_title('xMrs'));
     }
+
     /**
      * Test map title to gender
      * @group sms
      * @group plugin_cs_sms
      */
-    public function test_title_to_gender() {
+    public function test_title_to_gender()
+    {
         // Other gender.
         $this->assertEquals('Other', user_helper::title_to_gender('Mx'));
         // Male gender.
@@ -89,45 +124,49 @@ class user_helpertest extends unittestdatabase {
         // Unknown title, null gender.
         $this->assertEquals(null, user_helper::title_to_gender('Prof'));
     }
+
     /**
      * Test map student status
      * @group sms
      * @group plugin_cs_sms
      */
-    public function test_map_student_status() {
+    public function test_map_student_status()
+    {
         // User Cancelled.
-        $this->assertEquals('Left', user_helper::map_student_status('CN', 2, $this->db));
+        $this->assertEquals('Left', user_helper::map_student_status('CN', $this->uid1, $this->db));
         // User Discontinued.
-        $this->assertEquals('Left', user_helper::map_student_status('DC', 3, $this->db));
+        $this->assertEquals('Left', user_helper::map_student_status('DC', $this->uid2, $this->db));
         // User Deceased.
-        $this->assertEquals('Left', user_helper::map_student_status('DE', 4, $this->db));
+        $this->assertEquals('Left', user_helper::map_student_status('DE', $this->uid3, $this->db));
         // User Dismissed.
-        $this->assertEquals('Left', user_helper::map_student_status('DM', 5, $this->db));
+        $this->assertEquals('Left', user_helper::map_student_status('DM', $this->uid4, $this->db));
         // Completed Program.
-        $this->assertEquals('Graduate', user_helper::map_student_status('CM', 6, $this->db));
+        $this->assertEquals('Graduate', user_helper::map_student_status('CM', $this->uid5, $this->db));
         // User Admitted.
-        $this->assertEquals('Suspended', user_helper::map_student_status('AD', 7, $this->db));
+        $this->assertEquals('Suspended', user_helper::map_student_status('AD', $this->uid6, $this->db));
         // User Applicant.
-        $this->assertEquals('Suspended', user_helper::map_student_status('AP', 8, $this->db));
+        $this->assertEquals('Suspended', user_helper::map_student_status('AP', $this->uid7, $this->db));
         // User Leave of absence.
-        $this->assertEquals('Student', user_helper::map_student_status('LA', 9, $this->db));
+        $this->assertEquals('Student', user_helper::map_student_status('LA', $this->uid8, $this->db));
         // User Prematriculant.
-        $this->assertEquals('Suspended', user_helper::map_student_status('PM', 10, $this->db));
+        $this->assertEquals('Suspended', user_helper::map_student_status('PM', $this->uid9, $this->db));
         // User Suspended.
-        $this->assertEquals('Suspended', user_helper::map_student_status('SP', 11, $this->db));
+        $this->assertEquals('Suspended', user_helper::map_student_status('SP', $this->uid10, $this->db));
         // User Waitlisted.
-        $this->assertEquals('Suspended', user_helper::map_student_status('WT', 12, $this->db));
+        $this->assertEquals('Suspended', user_helper::map_student_status('WT', $this->uid11, $this->db));
         // User Active.
-        $this->assertEquals('Student', user_helper::map_student_status('AC', 13, $this->db));
+        $this->assertEquals('Student', user_helper::map_student_status('AC', $this->uid12, $this->db));
         // User Locked interanlly in Rogo
-        $this->assertEquals('Locked', user_helper::map_student_status('AC', 14, $this->db));
+        $this->assertEquals('Locked', user_helper::map_student_status('AC', $this->uid13, $this->db));
     }
+
     /**
      * Test map year of study
      * @group sms
      * @group plugin_cs_sms
      */
-    public function test_map_yearofstudy() {
+    public function test_map_yearofstudy()
+    {
         // Valid year 06.
         $this->assertEquals(6, user_helper::map_yearofstudy('06'));
         // Valid year 05.
