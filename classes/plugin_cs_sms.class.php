@@ -69,13 +69,13 @@ class plugin_cs_sms extends \plugins\plugins_sms
      * Name of external student management system.
      * @var string
      */
-    const SMS = 'Campus Solutions';
+    public const SMS = 'Campus Solutions';
 
     /**
      * Campus Solutions web service version.
      * @var string
      */
-    const CSVERSIONONE = 'v1';
+    public const CSVERSIONONE = 'v1';
 
     /**
      * Set the availbe land pack strings for the plugin
@@ -85,7 +85,7 @@ class plugin_cs_sms extends \plugins\plugins_sms
         $langpack = new \langpack();
         $this->strings = $langpack->get_all_strings($this->langcomponent);
     }
-    
+
     /**
      * Is the plugin function configured
      * @param stiring $function name of function
@@ -99,7 +99,7 @@ class plugin_cs_sms extends \plugins\plugins_sms
         }
         return false;
     }
-    
+
     /**
      * Is this plugin enabled
      * @return boolean true if enabled
@@ -128,7 +128,7 @@ class plugin_cs_sms extends \plugins\plugins_sms
         $this->validation = $this->config->get_setting($this->plugin, 'validate_schema');
         $this->gradebookdir = $this->config->get_setting($this->plugin, 'gradebooklocation');
     }
-    
+
     /**
      * Call web service to retrieve information.
      * @param string $type type of web service to call i.e. RogoProgPlan for courses
@@ -195,7 +195,7 @@ class plugin_cs_sms extends \plugins\plugins_sms
      * @params integer $session academic session to sync enrolments with
      * @params integer $externalid external system module id
      */
-    public function get_enrolments($session, $externalid = null)
+    public function get_enrolments($session = null, $externalid = null)
     {
         if (!$this->is_enabled() or !$this->is_configured('enrolment')) {
             return;
@@ -215,6 +215,7 @@ class plugin_cs_sms extends \plugins\plugins_sms
             } else {
                 $campuses = $this->campuslist;
             }
+            $yearutils = new \yearutils($this->config->db);
             foreach ($campuses as $campus) {
                 $args = array('academic_session' => $session, 'campus' => $campus);
                 // Targeted list of modules.
@@ -222,9 +223,16 @@ class plugin_cs_sms extends \plugins\plugins_sms
                     $targetmodules = modules_helper::get_target_modules($campus, $active);
                     foreach ($targetmodules as $eid) {
                         $args['externalid'] = $eid;
+                        // Get current academic session for module it non provided.
+                        if (is_null($args['academic_session'])) {
+                            $modid = \module_utils::get_id_from_externalid($eid, plugin_cs_sms::SMS, $this->config->db);
+                            $args['academic_session'] = $yearutils->get_current_session(
+                                \module_utils::getAcademicYearStart($modid)
+                            );
+                        }
                         $response = $this->callws('RogoEnrolments', self::CSVERSIONONE, $args);
                         if ($response != '') {
-                            enrolments_helper::process($response, $this->userid, $this->strings, $this->db, $logfile, $session, $this->validation, $active, $args);
+                            enrolments_helper::process($response, $this->userid, $this->strings, $this->db, $logfile, $args['academic_session'], $this->validation, $active, $args);
                         }
                     }
                 } else {
@@ -232,16 +240,23 @@ class plugin_cs_sms extends \plugins\plugins_sms
                     if (!is_null($externalid)) {
                         $args['externalid'] = $externalid;
                     }
+                    // Get current academic session for module it non provided.
+                    if (is_null($args['academic_session'])) {
+                        $modid = \module_utils::get_id_from_externalid($eid, plugin_cs_sms::SMS, $this->config->db);
+                        $args['academic_session'] = $yearutils->get_current_session(
+                            \module_utils::getAcademicYearStart($modid)
+                        );
+                    }
                     $response = $this->callws('RogoEnrolments', self::CSVERSIONONE, $args);
                     if ($response != '') {
-                        enrolments_helper::process($response, $this->userid, $this->strings, $this->db, $logfile, $session, $this->validation, $active, $args);
+                        enrolments_helper::process($response, $this->userid, $this->strings, $this->db, $logfile, $args['academic_session'], $this->validation, $active, $args);
                     }
                 }
             }
             unlink($lockfile);
         }
     }
-    
+
     /**
      * Update module in an academic session
      * Updates module details and enrolments
@@ -256,7 +271,7 @@ class plugin_cs_sms extends \plugins\plugins_sms
         $this->get_modules($externalid, $session);
         $this->get_enrolments($session, $externalid);
     }
-    
+
     /**
      * Get faculties/schools.
      */
@@ -290,7 +305,7 @@ class plugin_cs_sms extends \plugins\plugins_sms
             unlink($lockfile);
         }
     }
-    
+
     /**
      * Get courses
      */
@@ -322,7 +337,7 @@ class plugin_cs_sms extends \plugins\plugins_sms
             unlink($lockfile);
         }
     }
-    
+
     /**
      * Get modules
      * @params integer $externalid external system module id
@@ -374,7 +389,7 @@ class plugin_cs_sms extends \plugins\plugins_sms
             unlink($lockfile);
         }
     }
-        
+
     /**
      * Write a gradebook for an academic session to a file to be processed by campus solutions.
      * @param integer $session academic session to publish gradebook for
@@ -407,7 +422,7 @@ class plugin_cs_sms extends \plugins\plugins_sms
             return false;
         }
     }
-    
+
     /**
      * Check if faculty/school import is supported by the plugin
      * @return array|bool import url and translation strings, false if faculty/school import not supported
@@ -420,7 +435,7 @@ class plugin_cs_sms extends \plugins\plugins_sms
             return false;
         }
     }
-    
+
     /**
      * Check if course import is supported by the plugin
      * @return array|bool import url and translation strings, false  if course import not supported
@@ -433,7 +448,7 @@ class plugin_cs_sms extends \plugins\plugins_sms
             return false;
         }
     }
-    
+
     /**
      * Check if enrolment import is supported by the plugin
      * @return array|bool false if enrolment import not supported
@@ -446,7 +461,7 @@ class plugin_cs_sms extends \plugins\plugins_sms
             return false;
         }
     }
-    
+
     /**
      * Check if assessment import is supported by the plugin
      * @return array|bool import url and translation strings, false  if assessment import not supported
@@ -459,7 +474,7 @@ class plugin_cs_sms extends \plugins\plugins_sms
             return false;
         }
     }
-    
+
     /**
      * Get name of sms
      * @return string name of sms
