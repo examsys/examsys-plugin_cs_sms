@@ -1,19 +1,19 @@
 <?php
 
-// This file is part of Rogō
+// This file is part of ExamSys
 //
-// Rogō is free software: you can redistribute it and/or modify
+// ExamSys is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Rogō is distributed in the hope that it will be useful,
+// ExamSys is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Rogō.  If not, see <http://www.gnu.org/licenses/>.
+// along with ExamSys.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
  *
@@ -41,7 +41,7 @@ $optionslist = getopt($options, $longoptions);
 if (isset($optionslist['h']) || isset($optionslist['help'])) {
     echo <<<HELP
 
-Rogo gradebook publication script
+ExamSys gradebook publication script
 Copyright (c) 2016 University of Nottingahm
 
 Generates gradebook files for campus solutions student management system.
@@ -59,10 +59,10 @@ HELP;
 }
 
 set_time_limit(0);
-require_once dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/include/load_config.php';
-require_once dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/include/custom_error_handler.inc';
+require_once dirname(__FILE__, 5) . '/include/load_config.php';
+require_once dirname(__FILE__, 5) . '/include/custom_error_handler.inc';
 // Start class autoloading.
-require_once dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/include/autoload.inc.php';
+require_once dirname(__FILE__, 5) . '/include/autoload.inc.php';
 autoloader::init();
 $configObject = \Config::get_instance();
 $notice = UserNotices::get_instance();

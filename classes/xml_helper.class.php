@@ -1,19 +1,19 @@
 <?php
 
-// This file is part of Rogō
+// This file is part of ExamSys
 //
-// Rogō is free software: you can redistribute it and/or modify
+// ExamSys is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Rogō is distributed in the hope that it will be useful,
+// ExamSys is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Rogō.  If not, see <http://www.gnu.org/licenses/>.
+// along with ExamSys.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace plugins\SMS\plugin_cs_sms;
 
@@ -31,9 +31,9 @@ class xml_helper
 {
     /**
      * Check if xml response is an error.
-     * @param DOMDocument $data xml response
+     * @param \DOMDocument $data xml response
      * @param integer $userid user used to log error to
-     * @param mysqli $db db connection
+     * @param \mysqli $db db connection
      * @param string $ws name of web service called
      * @param array $args arguments used to call web service
      * @return boolean true on error
@@ -54,13 +54,13 @@ class xml_helper
         }
         return false;
     }
-    
+
     /**
      * Check if xml validates against schema
-     * @param DOMDocument $data xml response
+     * @param \DOMDocument $data xml response
      * @param string $schemaname name of schema file
      * @param integer $userid user used to log error to
-     * @param mysqli $db db connection
+     * @param \mysqli $db db connection
      * @return boolean true if valid xml
      */
     public static function validate($data, $schemaname, $userid, $strings, $db)
@@ -75,5 +75,6 @@ class xml_helper
         }
         // Disable user error handling.
         libxml_use_internal_errors(false);
+        return true;
     }
 }

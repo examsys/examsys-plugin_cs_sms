@@ -1,19 +1,19 @@
 <?php
 
-// This file is part of Rogō
+// This file is part of ExamSys
 //
-// Rogō is free software: you can redistribute it and/or modify
+// ExamSys is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Rogō is distributed in the hope that it will be useful,
+// ExamSys is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Rogō.  If not, see <http://www.gnu.org/licenses/>.
+// along with ExamSys.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace plugins\SMS\plugin_cs_sms;
 
@@ -31,17 +31,17 @@ class assessments_helper
 {
     /**
      * List of valid assessment types.
-     * SUMMATIVE - CS only currently mapping one exam type to Rogo (summative)
+     * SUMMATIVE - CS only currently mapping one exam type to ExamSys (summative)
      * @var array $validtypes
      */
     private static $validtypes = array('SUMMATIVE');
-    
+
     /**
      * Process assessment WS response
      * @param string xml $response xml from enrolment WS
      * @param integer $userid user to record actions under
      * @param array $strings lnaguage strings
-     * @param mysqli $db db connection
+     * @param \mysqli $db db connection
      * @param string $logfile log file location
      * @param integer $session academic session for enrolments
      * @param boolean $validation validate xml response against schema
@@ -67,7 +67,7 @@ class assessments_helper
         $node = 1;
         foreach ($assessments as $assessment) {
             $xpath = new \DOMXPath($assessment->ownerDocument);
-            // The AssessmentID in Campus Solutions is the Properties External ID in Rogo.
+            // The AssessmentID in Campus Solutions is the Properties External ID in ExamSys.
             try {
                 $externalid = $xpath->query('./AssessmentID', $assessment)->item(0)->nodeValue;
                 // Skip invalid assessment types.
@@ -162,9 +162,9 @@ class assessments_helper
 
     /**
      * Process owners node
-     * @param DOMNodeList $ownernode xml for owners
-     * @param mysqli $db db connection
-     * @return mixed user rogo id or false if not found, null if missing.
+     * @param \DOMNodeList $ownernode xml for owners
+     * @param \mysqli $db db connection
+     * @return mixed user ExamSys id or false if not found, null if missing.
      */
     private static function process_owner($ownernode, $db)
     {
@@ -184,12 +184,12 @@ class assessments_helper
         }
         return $userid;
     }
-    
+
     /**
      * Get owner from node
-     * @param DOMNode $usernode xml for user
-     * @param mysqli $db db connection
-     * @return mixed user rogo id or false if not found, null if missing.
+     * @param \DOMNode $usernode xml for user
+     * @param \mysqli $db db connection
+     * @return mixed user ExamSys id or false if not found, null if missing.
      */
     private static function get_owner($usernode, $db)
     {
@@ -202,10 +202,10 @@ class assessments_helper
         }
         return \UserUtils::username_exists($username, $db);
     }
-     
+
     /**
      * Process modules node
-     * @param DOMNodeList $modulenode xml for modules
+     * @param \DOMNodeList $modulenode xml for modules
      * @return array list of module external ids.
      */
     private static function process_module($modulenode)

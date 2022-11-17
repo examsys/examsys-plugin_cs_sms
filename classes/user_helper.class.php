@@ -1,19 +1,19 @@
 <?php
 
-// This file is part of Rogō
+// This file is part of ExamSys
 //
-// Rogō is free software: you can redistribute it and/or modify
+// ExamSys is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Rogō is distributed in the hope that it will be useful,
+// ExamSys is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Rogō.  If not, see <http://www.gnu.org/licenses/>.
+// along with ExamSys.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace plugins\SMS\plugin_cs_sms;
 
@@ -31,11 +31,11 @@ class user_helper
 {
     /**
      * Parse the user node of the membership xml and create/update users as required
-     * @param DOMNodeList $usernode xml for users
+     * @param \DOMNodeList $usernode xml for users
      * @param string $moduleextid external system module id
      * @param integer $userid user to log action to
      * @param string $logfile log file location
-     * @param mysqli $db db connection
+     * @param \mysqli $db db connection
      * @param array $userupdated list of users already updated so we can skip
      * @return array list of enrolled users
      */
@@ -45,7 +45,7 @@ class user_helper
         foreach ($usernode as $users) {
             if ($users->hasChildNodes()) {
                 $xpath = new \DOMXPath($users->ownerDocument);
-                // Student IDs in Rogo are User IDs in Campus Solutions.
+                // Student IDs in ExamSys are User IDs in Campus Solutions.
                 try {
                     $externalid = $xpath->query('./UserId', $users)->item(0)->nodeValue;
                 } catch (\exception $e) {
@@ -108,10 +108,10 @@ class user_helper
     }
 
     /**
-     * Function to map gender supplied by CS to gender in Rogo
+     * Function to map gender supplied by CS to gender in ExamSys
      * @param string $csgender gender in CS
-     * @param string $title title in rogo
-     * @return string|null rogo gender or null if not mapped
+     * @param string $title title in ExamSys
+     * @return string|null ExamSys gender or null if not mapped
      */
     public static function map_gender($csgender, $title)
     {
@@ -133,21 +133,21 @@ class user_helper
                 $gender = 'Other';
                 break;
             default:
-                // Use title in rogo to assume gender.
+                // Use title in ExamSys to assume gender.
                 $gender = self::title_to_gender($title);
                 break;
         }
         return $gender;
     }
-    
+
     /**
-     * Function to map title supplied by CS to title in Rogo
+     * Function to map title supplied by CS to title in ExamSys
      * @param string $cstitle title in CS
-     * @return string|null rogo title or null if not mapped
+     * @return string|null ExamSys title or null if not mapped
      */
     public static function map_title($cstitle)
     {
-        // Valid Rogo titles Mx|Mr|Mrs|Miss|Ms|Dr|Professor
+        // Valid ExamSys titles Mx|Mr|Mrs|Miss|Ms|Dr|Professor
         if (preg_match('/^(Mx|Mr|Mrs|Miss|Ms|Dr|Professor)$/', $cstitle)) {
             $title = $cstitle;
         } else {
@@ -155,16 +155,16 @@ class user_helper
         }
         return $title;
     }
-    
+
     /**
      * Function to map title to gender
      * @param string $csgender gender in CS
-     * @param string $title title in rogo
-     * @return string|null rogo gender or null if not mapped
+     * @param string $title title in ExamSys
+     * @return string|null ExamSys gender or null if not mapped
      */
     public static function title_to_gender($title)
     {
-        // Valid Rogo titles Mx|Mr|Mrs|Miss|Ms|Dr|Professor
+        // Valid ExamSys titles Mx|Mr|Mrs|Miss|Ms|Dr|Professor
         switch ($title) {
             case 'Mx':
                 $gender = 'Other';
@@ -183,34 +183,34 @@ class user_helper
         }
         return $gender;
     }
-    
+
     /**
-     * Function to map status supplied by CS to role in Rogo
+     * Function to map status supplied by CS to role in ExamSys
      * @param string $csstatus status in CS
-     * @param integer $userid users rogo internal id
-     * @param mysqli $db database connection
-     * @return string|null rogo role or null if not mapped
+     * @param integer $userid users ExamSys internal id
+     * @param \mysqli $db database connection
+     * @return string|null ExamSys role or null if not mapped
      */
     public static function map_student_status($csstatus, $userid, $db)
     {
-        // Users locked internally in Rogo can only be unlocked manually within Rogo.
+        // Users locked internally in ExamSys can only be unlocked manually within ExamSys.
         if (\UserUtils::has_user_role($userid, 'Locked', $db)) {
             return 'Locked';
         }
 
         // Possible Statuses from CS
         // AC  Active in Program
-        // AD  Admitted - should not be sent to rogo so deafults to suspended
-        // AP  Applicant - should not be sent to rogo so deafults to suspended
+        // AD  Admitted - should not be sent to ExamSys so deafults to suspended
+        // AP  Applicant - should not be sent to ExamSys so deafults to suspended
         // CM  Completed Program
         // CN  Cancelled
         // DC  Discontinued
         // DE  Deceased
         // DM  Dismissed
         // LA  Leave of Absence - leave as Student role
-        // PM  Prematriculant - should not be sent to rogo so deafults to suspended
+        // PM  Prematriculant - should not be sent to ExamSys so deafults to suspended
         // SP  Suspended
-        // WT  Waitlisted - should not be sent to rogo so deafults to suspended
+        // WT  Waitlisted - should not be sent to ExamSys so deafults to suspended
         switch ($csstatus) {
             case 'CN':
             case 'DC':
@@ -236,16 +236,16 @@ class user_helper
     }
 
     /**
-     * Function to map year of study supplied by CS to year of study in Rogo
+     * Function to map year of study supplied by CS to year of study in ExamSys
      * @param string $csyear year in CS
-     * @return string|null rogo year or null if not mapped
+     * @return string|null ExamSys year or null if not mapped
      */
     public static function map_yearofstudy($csyear)
     {
         // Possible Statuses from CS
         // 00-06 - undergraduate year as zero padded integer, maps to single digit integer
-        // PGT - not releveant to Rogo so map to null
-        // PGR - not releveant to Rogo so map to null
+        // PGT - not releveant to ExamSys so map to null
+        // PGR - not releveant to ExamSys so map to null
         // FND - maps to 0
         if (preg_match('/^0[0-6]$/', $csyear)) {
             $year = substr($csyear, 1);

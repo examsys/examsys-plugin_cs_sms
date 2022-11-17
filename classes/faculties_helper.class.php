@@ -1,19 +1,19 @@
 <?php
 
-// This file is part of Rogō
+// This file is part of ExamSys
 //
-// Rogō is free software: you can redistribute it and/or modify
+// ExamSys is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Rogō is distributed in the hope that it will be useful,
+// ExamSys is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Rogō.  If not, see <http://www.gnu.org/licenses/>.
+// along with ExamSys.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace plugins\SMS\plugin_cs_sms;
 
@@ -34,7 +34,7 @@ class faculties_helper
      * @param string xml $response xml from faculty WS
      * @param integer $userid user to record actions under
      * @param array $strings lnaguage strings
-     * @param mysqli $db db connection
+     * @param \mysqli $db db connection
      * @param string $logfile log file location
      * @param boolean $validation validate xml response against schema
      * @param array $args arguments used to call web service
@@ -61,7 +61,7 @@ class faculties_helper
         $fm = new \api\facultymanagement($db);
         foreach ($faculties as $faculty) {
             $xpath = new \DOMXPath($faculty->ownerDocument);
-            // The FacultyID in Campus Solutions is the Faculty External ID in Rogo.
+            // The FacultyID in Campus Solutions is the Faculty External ID in ExamSys.
             try {
                 $externalid = $xpath->query('./FacultyID', $faculty)->item(0)->nodeValue;
             } catch (\exception $e) {
@@ -102,7 +102,7 @@ class faculties_helper
                 $currentschools = array_merge($currentschools, school_helper::get_schools($memberschools, $externalid, $db, $userid, $logfile));
             }
         }
-        
+
         return array($currentfaculties, $currentschools);
     }
 
@@ -113,7 +113,7 @@ class faculties_helper
      * @param array $currentfaculties of faculty ids in CS
      * @param string $logfile log file location
      * @param integer $userid user to record actions under
-     * @param mysqli $db db connection
+     * @param \mysqli $db db connection
      */
     public static function delete_faculties_schools($currentschools, $currentfaculties, $logfile, $userid, $db)
     {

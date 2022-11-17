@@ -1,19 +1,19 @@
 <?php
 
-// This file is part of Rogō
+// This file is part of ExamSys
 //
-// Rogō is free software: you can redistribute it and/or modify
+// ExamSys is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 //
-// Rogō is distributed in the hope that it will be useful,
+// ExamSys is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Rogō.  If not, see <http://www.gnu.org/licenses/>.
+// along with ExamSys.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace plugins\SMS\plugin_cs_sms;
 
@@ -33,9 +33,9 @@ class log_helper
      * Log to application error
      * @param integer $userid user to log error to
      * @param array $string error string
-     * @param integer $errline line web service was called
+     * @param int $errorline line web service was called
+     * @param \mysqli $db db connection
      * @param array $args arguments used to call web service
-     * @param mysqli $db db connection
      */
     public static function log_app_warning($userid, $string, $errorline, $db, $args)
     {
@@ -44,7 +44,7 @@ class log_helper
         $errorfile = $_SERVER['PHP_SELF'];
         $log->record_application_warning($userid, $username, $string, $errorfile, $errorline, $args);
     }
-    
+
     /**
      * Set the log file for the was service call
      * @param string logdir log directory location
@@ -63,7 +63,7 @@ class log_helper
         }
         return $logfile;
     }
-    
+
     /**
      * Log response to file
      * @param string $type action type
